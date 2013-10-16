@@ -26,7 +26,7 @@ public interface ITree {
 	public boolean remove(Integer value);
 
 	/**
-	 * @return maximum value of length between root-node and any other stored in this tree
+	 * @return maximum value of length between root-node and any other node stored in this tree
 	 */
 	public int depth();
 
