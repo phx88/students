@@ -1,15 +1,10 @@
-package vladimir.chugunov;
+package vladimir.chugunov.Tree;
 
 import interfaces.IVisitor;
 
 import java.util.ConcurrentModificationException;
 
 public class BinaryTree implements interfaces.Tree.ITree {
-
-	/**
-	 * cache
-	 */
-	private int	depth;
 
 	private static class Node {
 		Integer	value;
@@ -50,16 +45,44 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		}
 	}
 
+	/**
+	 * Chached depth value
+	 */
+	private int	depth;
+
+	/**
+	 * Root of the node. There's no no node which has link on it
+	 */
 	private Node	root;
 
+	{
+		System.out.println(sc(123));
+	}
+	int sc(int a){
+		return (a==0)?0:a%10+sc(a/10);
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void add(Integer value) {
-		depth = -1;
+		char[] c = {'2'};
+		
+		String s = new String(c);
+		invalidateDepthCache();
 		if (root == null) {
 			root = new Node(null, null, value);
 		} else {
 			getNodeToAdd(value).createSibling(value);
 		}
+	}
+
+	/**
+	 * Content of tree changed so previosly computed value is not valid
+	 */
+	private void invalidateDepthCache() {
+		depth = -1;
 	}
 
 	private Node getNodeToAdd(Integer value) {
@@ -96,7 +119,7 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		while (node != null) {
 			if (node.value == value) {
 				removeNode(node, parent);
-				depth = -1;
+				invalidateDepthCache();
 				return true;
 			} else {
 				parent = node;
@@ -178,17 +201,29 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	}
 
 	@Override
-	public synchronized void depthFirstVisiting(IVisitor visitor) {
-		dfs(root, visitor);
+	public void depthFirstVisiting(IVisitor visitor) {
+		dfs(root, visitor, 0);
+	}
+	
+	public void sortedVisiting(IVisitor visitor){
+		dfs(root, visitor, 1);
 	}
 
-	private void dfs(Node n, IVisitor visitor) {
-		visitor.visit(n);
+	private void dfs(Node n, IVisitor visitor, int when) {
+		if (when == 0) {
+			visitor.visit(n);
+		}
 		if (n.left != null) {
-			dfs(n.left, visitor);
+			dfs(n.left, visitor, when);
+		}
+		if (when == 1) {
+			visitor.visit(n);
 		}
 		if (n.right != null) {
-			dfs(n.right, visitor);
+			dfs(n.right, visitor, when);
+		}
+		if (when == 2) {
+			visitor.visit(n);
 		}
 	}
 
@@ -219,40 +254,40 @@ public class BinaryTree implements interfaces.Tree.ITree {
 
 	public static void main(String[] args) {
 		final BinaryTree tree = new BinaryTree();
-		 int level = 7;
-		 IVisitor visitor = new Printer();
+		int level = 7;
+		IVisitor visitor = new Printer();
+
+		tree.add(1);
+		tree.add(13);
+		tree.add(21);
+		tree.add(5);
+		tree.add(7);
+		tree.add(0);
+		tree.add(-1);
+		tree.add(10);
+		tree.add(8);
+		tree.add(9);
+		tree.add(null);
+
+		System.out.println("tree depth: " + tree.depth());
+		System.out.println("number of nodes on level " + level + ": " + tree.getSizeOfLevel(level));
+
+		System.out.println(" ---- contains ---- ");
+		System.out.println(tree.contains(7));
+		System.out.println(tree.contains(100));
+
+		System.out.println(" ---- remove ---- ");
+		System.out.print(tree.contains(13) + "  remove(13)  ");
+		tree.remove(13);
+		System.out.println(tree.contains(13));
+		System.out.println("tree depth: " + tree.depth());
+		System.out.println("number of nodes on level " + level + ": " + tree.getSizeOfLevel(level));
+
+		System.out.println(" ---- visitor ---- ");
+		tree.depthFirstVisiting(visitor);
 		
-		 tree.add(1);
-		 tree.add(13);
-		 tree.add(21);
-		 tree.add(5);
-		 tree.add(7);
-		 tree.add(0);
-		 tree.add(-1);
-		 tree.add(10);
-		 tree.add(8);
-		 tree.add(9);
-		 tree.add(null);
-		
-		
-		 System.out.println("tree depth: " + tree.depth());
-		 System.out.println("number of nodes on level " + level + ": " +
-		 tree.getSizeOfLevel(level));
-		
-		 System.out.println(" ---- contains ---- ");
-		 System.out.println(tree.contains(7));
-		 System.out.println(tree.contains(100));
-		
-		 System.out.println(" ---- remove ---- ");
-		 System.out.print(tree.contains(13) + "  remove(13)  " );
-		 tree.remove(13);
-		 System.out.println(tree.contains(13));
-		 System.out.println("tree depth: " + tree.depth());
-		 System.out.println("number of nodes on level " + level + ": " +
-		 tree.getSizeOfLevel(level));
-		
-		 System.out.println(" ---- visitor ---- ");
-		 tree.depthFirstVisiting(visitor);
+		System.out.println();
+		tree.sortedVisiting(new Printer());
 	}
 
 	public static final class Printer implements IVisitor {
