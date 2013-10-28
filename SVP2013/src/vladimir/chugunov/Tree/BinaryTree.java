@@ -17,7 +17,7 @@ public class BinaryTree implements interfaces.Tree.ITree {
 			right = r;
 		}
 
-		public void createSibling(Integer v) {
+		public void createChild(Integer v) {
 			if (v == null || v < value) {
 				left = new Node(null, null, v);
 			} else {
@@ -31,12 +31,16 @@ public class BinaryTree implements interfaces.Tree.ITree {
 
 		public Integer removeLeaf(Node node) {
 			if (left != null && left.equals(node)) {
-				if (left.left != null || left.right != null) { throw new IllegalStateException(); }
+				if (left.left != null || left.right != null) {
+					throw new IllegalStateException("Wrong specified leaf");
+				}
 				Integer retVal = left.value;
 				left = null;
 				return retVal;
 			} else if (right != null && right.equals(node)) {
-				if (right.left != null || right.right != null) { throw new IllegalStateException(); }
+				if (right.left != null || right.right != null) {
+					throw new IllegalStateException("Wrong specified leaf");
+				}
 				Integer retVal = right.value;
 				right = null;
 				return retVal;
@@ -48,7 +52,7 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	/**
 	 * Chached depth value
 	 */
-	private int	depth;
+	private int		depth;
 
 	/**
 	 * Root of the node. There's no no node which has link on it
@@ -58,23 +62,21 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	{
 		System.out.println(sc(123));
 	}
-	int sc(int a){
-		return (a==0)?0:a%10+sc(a/10);
+
+	int sc(int a) {
+		return (a == 0) ? 0 : a % 10 + sc(a / 10);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void add(Integer value) {
-		char[] c = {'2'};
-		
-		String s = new String(c);
 		invalidateDepthCache();
 		if (root == null) {
 			root = new Node(null, null, value);
 		} else {
-			getNodeToAdd(value).createSibling(value);
+			getNodeToAdd(value).createChild(value);
 		}
 	}
 
@@ -113,20 +115,80 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	}
 
 	@Override
+//	public boolean remove(Integer value) {
+//		Node parent = null;
+//		Node node = root;
+//		while (node != null) {
+//			if (node.value == value) {
+//				removeNode(node, parent);
+//				invalidateDepthCache();
+//				return true;
+//			} else {
+//				parent = node;
+//				node = (value == null || value < node.value) ? node.left : node.right;
+//			}
+//		}
+//		return false;
+//	}
+
 	public boolean remove(Integer value) {
+		if ((root == null) || (!contains(value))) {
+			return false;
+		}
+		Node runner = root;
 		Node parent = null;
-		Node node = root;
-		while (node != null) {
-			if (node.value == value) {
-				removeNode(node, parent);
-				invalidateDepthCache();
-				return true;
-			} else {
-				parent = node;
-				node = (value == null || value < node.value) ? node.left : node.right;
+		while (runner != null) {
+			parent = runner;
+			if (value < runner.value) {
+				runner = runner.left;
+				remove(value);
 			}
+			if (value > runner.value) {
+				runner = runner.right;
+				remove(value);
+			}
+			if (value == runner.value) {
+				if ((runner.left == null) && (runner.right == null)) {
+					if (parent.left.value == value) {
+						parent.left = null;
+						return true;
+					} else if (parent.right.value == value) {
+						parent.left = null;
+						return true;
+					} else {
+						System.out.println("Error");
+						return false;
+					}
+
+				} else if ((runner.left == null) || (runner.right == null)) {
+					if ((parent.left.value == value) && (runner.left != null)) {
+						parent.left = runner.left;
+						return true;
+					} else if ((parent.right.value == value) && (runner.left != null)) {
+						parent.right = runner.left;
+						return true;
+					} else if ((parent.right.value == value) && (runner.right != null)) {
+						parent.right = runner.right;
+						return true;
+					} else if ((parent.left.value == value) && (runner.right != null)) {
+						parent.right = runner.left;
+						return true;
+					}
+				} else if ((runner.left != null) && (runner.right != null)) {
+					if (runner.right.left == null) {
+						runner = runner.right;
+					} else {
+						runner.value = runner.right.left.value;
+						remove(runner.right.left.value);
+						return true;
+					}
+				}
+
+			}
+
 		}
 		return false;
+
 	}
 
 	private Integer removeNode(Node node, Node parent) {
@@ -151,7 +213,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 			node.value = removeNode(n, nParent);
 			return retVal;
 		} else if (parent == null) {
-			if (node != root) { throw new IllegalArgumentException(); }
+			if (node != root) {
+				throw new IllegalArgumentException();
+			}
 			Integer retVal = root.value;
 			root = null;
 			return retVal;
@@ -169,7 +233,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	}
 
 	public int getDepth(Node n) {
-		if (n == null) { return 0; }
+		if (n == null) {
+			return 0;
+		}
 
 		int l = getDepth(n.left);
 		int r = getDepth(n.right);
@@ -199,13 +265,13 @@ public class BinaryTree implements interfaces.Tree.ITree {
 			}
 		}
 	}
-
+	
 	@Override
 	public void depthFirstVisiting(IVisitor visitor) {
 		dfs(root, visitor, 0);
 	}
-	
-	public void sortedVisiting(IVisitor visitor){
+
+	public void sortedVisiting(IVisitor visitor) {
 		dfs(root, visitor, 1);
 	}
 
@@ -235,7 +301,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	}
 
 	private void printer(StringBuilder sb, Node n, int currDepth) {
-		if (depth == -1) { throw new ConcurrentModificationException(); }
+		if (depth == -1) {
+			throw new ConcurrentModificationException();
+		}
 
 		if (n.left != null) {
 			printer(sb, n.left, currDepth + 1);
@@ -285,7 +353,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 
 		System.out.println(" ---- visitor ---- ");
 		tree.depthFirstVisiting(visitor);
-		
+
+		System.out.println();
+		System.out.println(tree);
 		System.out.println();
 		tree.sortedVisiting(new Printer());
 	}
