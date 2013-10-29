@@ -1,23 +1,44 @@
 package vladimir.chugunov.Tree;
 
 import interfaces.IVisitor;
+import interfaces.Tree.ITree;
 
 import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 
+import lisa.kapitonova.Lists.Visitor;
+
+/**
+ * Typical binary tree storing {@link Integer} values
+ * 
+ * @author Alpen Ditrix
+ * @see {@link ITree}
+ */
 public class BinaryTree implements interfaces.Tree.ITree {
 
+	/**
+	 * Basic storage element of tree
+	 * 
+	 * @author Alpen Ditrix
+	 */
 	private static class Node {
 		Integer	value;
 		Node	left;
 		Node	right;
 
-		public Node(Node l, Node r, Integer v) {
+		Node(Node l, Node r, Integer v) {
 			value = v;
 			left = l;
 			right = r;
 		}
 
-		public void createChild(Integer v) {
+		/**
+		 * Adds a child to this node with {@link #value} {@code== v}. If there was another child it
+		 * will be replaced
+		 * 
+		 * @param v
+		 */
+		void createChild(Integer v) {
 			if (v == null || v < value) {
 				left = new Node(null, null, v);
 			} else {
@@ -25,22 +46,41 @@ public class BinaryTree implements interfaces.Tree.ITree {
 			}
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		public String toString() {
 			return value == null ? "null" : value.toString();
 		}
 
-		public Integer removeLeaf(Node node) {
+		/**
+		 * Removes leaf node which is child of this node
+		 * 
+		 * @param node
+		 *            which to remove
+		 * @return value of removed node
+		 * @throws IllegalStateException
+		 *             if node intented to remove actually is not a leaf
+		 * @throws IllegalArgumentException
+		 *             if node intented to remove is not a child of this node
+		 * 
+		 */
+		Integer removeLeaf(Node node) {
 			if (left != null && left.equals(node)) {
+				
 				if (left.left != null || left.right != null) {
 					throw new IllegalStateException("Wrong specified leaf");
 				}
+
 				Integer retVal = left.value;
 				left = null;
 				return retVal;
 			} else if (right != null && right.equals(node)) {
+
 				if (right.left != null || right.right != null) {
 					throw new IllegalStateException("Wrong specified leaf");
 				}
+
 				Integer retVal = right.value;
 				right = null;
 				return retVal;
@@ -59,14 +99,6 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	 */
 	private Node	root;
 
-	{
-		System.out.println(sc(123));
-	}
-
-	int sc(int a) {
-		return (a == 0) ? 0 : a % 10 + sc(a / 10);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -81,12 +113,17 @@ public class BinaryTree implements interfaces.Tree.ITree {
 	}
 
 	/**
-	 * Content of tree changed so previosly computed value is not valid
+	 * Content of tree changed, hence previosly computed value is not valid
 	 */
 	private void invalidateDepthCache() {
 		depth = -1;
 	}
 
+	/**
+	 * @param value
+	 * @return {@link Node}, which may be parent of new {@link Node} with {@link Node#value}
+	 *         {@code == value} (this param)
+	 */
 	private Node getNodeToAdd(Integer value) {
 		Node p1 = root;
 		Node p2 = null;
@@ -101,6 +138,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		return p2;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean contains(Integer value) {
 		Node node = root;
@@ -114,83 +154,33 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-//	public boolean remove(Integer value) {
-//		Node parent = null;
-//		Node node = root;
-//		while (node != null) {
-//			if (node.value == value) {
-//				removeNode(node, parent);
-//				invalidateDepthCache();
-//				return true;
-//			} else {
-//				parent = node;
-//				node = (value == null || value < node.value) ? node.left : node.right;
-//			}
-//		}
-//		return false;
-//	}
-
 	public boolean remove(Integer value) {
-		if ((root == null) || (!contains(value))) {
-			return false;
-		}
-		Node runner = root;
 		Node parent = null;
-		while (runner != null) {
-			parent = runner;
-			if (value < runner.value) {
-				runner = runner.left;
-				remove(value);
+		Node node = root;
+		while (node != null) {
+			if (node.value == value) {
+				removeNode(node, parent);
+				invalidateDepthCache();
+				return true;
+			} else {
+				parent = node;
+				node = (value == null || value < node.value) ? node.left : node.right;
 			}
-			if (value > runner.value) {
-				runner = runner.right;
-				remove(value);
-			}
-			if (value == runner.value) {
-				if ((runner.left == null) && (runner.right == null)) {
-					if (parent.left.value == value) {
-						parent.left = null;
-						return true;
-					} else if (parent.right.value == value) {
-						parent.left = null;
-						return true;
-					} else {
-						System.out.println("Error");
-						return false;
-					}
-
-				} else if ((runner.left == null) || (runner.right == null)) {
-					if ((parent.left.value == value) && (runner.left != null)) {
-						parent.left = runner.left;
-						return true;
-					} else if ((parent.right.value == value) && (runner.left != null)) {
-						parent.right = runner.left;
-						return true;
-					} else if ((parent.right.value == value) && (runner.right != null)) {
-						parent.right = runner.right;
-						return true;
-					} else if ((parent.left.value == value) && (runner.right != null)) {
-						parent.right = runner.left;
-						return true;
-					}
-				} else if ((runner.left != null) && (runner.right != null)) {
-					if (runner.right.left == null) {
-						runner = runner.right;
-					} else {
-						runner.value = runner.right.left.value;
-						remove(runner.right.left.value);
-						return true;
-					}
-				}
-
-			}
-
 		}
 		return false;
-
 	}
 
+	/**
+	 * Some extraordinary magic
+	 * 
+	 * @param node
+	 * @param parent
+	 * @return
+	 */
 	private Integer removeNode(Node node, Node parent) {
 		if (node.left != null) {
 			Node n = node.left;
@@ -224,6 +214,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int depth() {
 		if (depth < 0) {
@@ -232,6 +225,11 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		return depth;
 	}
 
+	/**
+	 * @param n
+	 *            root of current subtree
+	 * @return depth of current subtree
+	 */
 	public int getDepth(Node n) {
 		if (n == null) {
 			return 0;
@@ -242,39 +240,105 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		return Math.max(l, r) + 1;
 	}
 
-	private int	levelCounter;
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public synchronized int getSizeOfLevel(int level) {
-		levelCounter = 0;
-		getLevelWidth(root, level, 0);
-		return levelCounter;
+		LevelCounter lc = new LevelCounter(root);
+		lc.computeWidthOfLevel(level);
+		return lc.getResult();
 	}
 
-	private void getLevelWidth(Node n, int level, int currDepth) {
-		if (n == null) {
-			return;
-		} else if (level == currDepth) {
-			levelCounter++;
-		} else {
-			if (n.left != null) {
-				getLevelWidth(n.left, level, currDepth + 1);
-			}
-			if (n.right != null) {
-				getLevelWidth(n.right, level, currDepth + 1);
+	/**
+	 * Class for hiding implementation of level width computation
+	 * 
+	 * @author Alpen Ditrix
+	 */
+	public class LevelCounter {
+
+		/**
+		 * Node from which computation will start
+		 */
+		private final Node	subroot;
+		private int			levelCounter	= 0;
+
+		/**
+		 * @param root
+		 *            node frome where to start computation
+		 */
+		LevelCounter(Node root) {
+			subroot = root;
+		}
+
+		/**
+		 * @return result of computation
+		 */
+		int getResult() {
+			return levelCounter;
+		}
+
+		/**
+		 * Computes amount of elements on depth {@code level}
+		 * 
+		 * @param level
+		 */
+		void computeWidthOfLevel(int level) {
+			computeWidth(subroot, level, 0);
+		}
+
+		/**
+		 * Goes through subtree of {@code n} from {@code currDepth} to {@code level}. Each time they
+		 * equals {@link LevelCounter} will be incremented
+		 * 
+		 * @param n
+		 *            root of current subtree
+		 * @param level
+		 *            where to go
+		 * @param currDepth
+		 *            current depth from {@link LevelCounter#subroot}
+		 */
+		private void computeWidth(Node n, int level, int currDepth) {
+			if (n == null) {
+				return;
+			} else if (level == currDepth) {
+				levelCounter++;
+			} else {
+				if (n.left != null) {
+					computeWidth(n.left, level, currDepth + 1);
+				}
+				if (n.right != null) {
+					computeWidth(n.right, level, currDepth + 1);
+				}
 			}
 		}
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void depthFirstVisiting(IVisitor visitor) {
 		dfs(root, visitor, 0);
 	}
 
+	/**
+	 * Visits every node in this tree int the natural order (low value first, high value last) and
+	 * acts on it.
+	 * 
+	 * @param visitor
+	 */
 	public void sortedVisiting(IVisitor visitor) {
 		dfs(root, visitor, 1);
 	}
 
+	/**
+	 * Visits every node in this tree (using DFS algorithm) and acts on it.
+	 * 
+	 * @param visitor
+	 * @param n rott of current subtree
+	 * @param when when to execute {@link Visitor}
+	 */
 	private void dfs(Node n, IVisitor visitor, int when) {
 		if (when == 0) {
 			visitor.visit(n);
@@ -293,6 +357,9 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		depth();// cache depth value
@@ -300,6 +367,15 @@ public class BinaryTree implements interfaces.Tree.ITree {
 		return sb.toString();
 	}
 
+	/**
+	 * Creates string which represents subtree of node {@code n} as {@link String}
+	 * 
+	 * @param sb
+	 *            where to append element
+	 * @param n
+	 *            root of current subtree
+	 * @param currDepth
+	 */
 	private void printer(StringBuilder sb, Node n, int currDepth) {
 		if (depth == -1) {
 			throw new ConcurrentModificationException();
@@ -322,7 +398,7 @@ public class BinaryTree implements interfaces.Tree.ITree {
 
 	public static void main(String[] args) {
 		final BinaryTree tree = new BinaryTree();
-		int level = 7;
+		int level = 2;
 		IVisitor visitor = new Printer();
 
 		tree.add(1);
@@ -339,7 +415,6 @@ public class BinaryTree implements interfaces.Tree.ITree {
 
 		System.out.println("tree depth: " + tree.depth());
 		System.out.println("number of nodes on level " + level + ": " + tree.getSizeOfLevel(level));
-
 		System.out.println(" ---- contains ---- ");
 		System.out.println(tree.contains(7));
 		System.out.println(tree.contains(100));
@@ -367,6 +442,52 @@ public class BinaryTree implements interfaces.Tree.ITree {
 			System.out.println(obj);
 		}
 
+	}
+
+	@Override
+	public Iterator getIterator() {
+		return null;
 	};
+	/*
+	 * private class DfsTreeIterator implements Iterator {
+	 * 
+	 * private Stack<Node> pathToHere = new Stack<>();
+	 * private Node next = root;
+	 * private Node returnedToRemove;
+	 * 
+	 * public DfsTreeIterator(){
+	 * next = root;
+	 * }
+	 * 
+	 * @Override
+	 * public boolean hasNext() {
+	 * return next != null;
+	 * }
+	 * 
+	 * @Override
+	 * public Object next() {
+	 * pathToHere.add(next);
+	 * returnedToRemove = next;
+	 * Node retVal = next;
+	 * 
+	 * next = newNext();
+	 * }
+	 * 
+	 * private Node newNext(Node n) {
+	 * 1 if(n.left!=null){
+	 * return n.left;
+	 * } else if(n.right !=null){
+	 * return n.right;
+	 * } else {
+	 * return
+	 * }
+	 * }
+	 * 
+	 * @Override
+	 * public void remove() {
+	 * BinaryTree.this.removeNode(node, parent)
+	 * }
+	 * }
+	 */
 
 }

@@ -1,5 +1,7 @@
 package interfaces.Tree;
 
+import java.util.Iterator;
+
 import interfaces.IVisitor;
 
 public interface ITree {
@@ -45,4 +47,10 @@ public interface ITree {
 	 * @param visitor
 	 */
 	public void depthFirstVisiting(IVisitor visitor);
+	
+	/**
+	 * @return DFS iterator
+	 */
+	public Iterator getIterator();
 }
+	
