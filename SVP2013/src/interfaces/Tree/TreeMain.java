@@ -20,8 +20,8 @@ public class TreeMain {
 		tree.add(10);
 		tree.add(null);
 		
-		System.out.println("tree deep: " + tree.getTreeDeep());
-		System.out.println("number of nodes on level " + level + ": " + tree.getNumberOfNode(level));
+		System.out.println("tree depth: " + tree.depth());
+		System.out.println("number of nodes on level " + level + ": " + tree.getSizeOfLevel(level));
 		
 		System.out.println(" ---- contains ---- ");
 		System.out.println(tree.contains(7));
@@ -31,10 +31,10 @@ public class TreeMain {
 		System.out.print(tree.contains(13) + "  remove(13)  " );
 		tree.remove(13);
 		System.out.println(tree.contains(13));
-		System.out.println("tree deep: " + tree.getTreeDeep());
-		System.out.println("number of nodes on level " + level + ": " + tree.getNumberOfNode(level));
+		System.out.println("tree depth: " + tree.depth());
+		System.out.println("number of nodes on level " + level + ": " + tree.getSizeOfLevel(level));
 				
 		System.out.println(" ---- visitor ---- ");
-		tree.goLeftTree(visitor);
+		tree.depthFirstVisiting(visitor);
 	}
 }
